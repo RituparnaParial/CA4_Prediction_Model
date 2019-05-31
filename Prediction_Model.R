@@ -38,7 +38,17 @@ head(variable.crime)
 # and alternate was accepted where p value obtained using 
 # the Spearman's Correlation Coefficient test was
 # p-value = 4.25e-10 
+# In CA3, the correlation amongst all values was also found
+# there is significant correlation between the variables, which
+# makes it a suitable match for linear regression.
 
+#----------boxplots to find outliers---------------#
+# the predictions made by the model
+default_settings <- par(no.readonly = TRUE)
+par(mfrow = c(1,2))
+boxplot(variable.crime$total.injuries, main = "Total Injuries boxplot")
+boxplot(variable.crime$unemployment.rate, main = "Unemployment rate boxplot")
+par(default_settings)
 # Before applying linear regression models, a verification is needed 
 # that several assumptions are met.These assumptions are:
 #  -Linearity
@@ -46,13 +56,40 @@ head(variable.crime)
 #  -Mean of residuals is 0
 #  -homoscedasticity (even distribution of residuals)
 
-# Scatterplot matrix (Visually representing the data)
+#------Scatterplot matrix----- (Visually representing the data)#
 pairs(variable.crime)
+
+#--------------Density plot to understand normality----------#
+# Note : this has already be done in previous CA 
+install.packages("e1071")
+library(e1071)
+default_settings <- par(no.readonly = TRUE)
+par(mfrow = c(1,2))
+
+# Plotting for total injuries
+plot(density(variable.crime$total.injuries), 
+     main = "Density plot : Total injuries",
+     ylab = "Frequency",
+     sub = paste("Skewness :", 
+                 round(e1071::skewness(variable.crime$total.injuries), 2)))
+
+# filling in the area under the density plot
+polygon(density(variable.crime$total.injuries), col = "red")
+
+# Plotting for Unemployement Rate
+plot(density(variable.crime$unemployment.rate), 
+     main = "Density plot : Unemployment Rate",
+     ylab = "Frequency",
+     sub = paste("Skewness :", 
+                 round(e1071::skewness(variable.crime$unemployment.rate), 2)))
+
+# filling the area under the density plot
+polygon(density(variable.crime$unemployment.rate), col = "green")
 
 # Creating a correlation matrix
 cor(variable.crime) 
 summary(variable.crime)
-# library(psych)
+library(psych)
 library(car)
 
 
@@ -71,16 +108,19 @@ pairs.panels(variable.crime, scale = FALSE, col = "red")
 
 model1 <- lm(drunk.driving.cases ~ total.injuries, data = variable.crime)
 summary(model1)
+# AIC --->1973.207
 AIC(model1)
 
 
 model2 <- lm(drunk.driving.cases ~ unemployment.rate, data = variable.crime)
 summary(model2)
+# AIC ---> 1996.413
 AIC(model2)
 
 
 model3 <- lm(drunk.driving.cases ~ ., data = variable.crime)
 summary(model3)
+# AIC --> 1955.978
 AIC(model3)
 
 # the model3 has a higher R-squared and lower
@@ -155,8 +195,9 @@ summary(final_regression_model)
 # are used to check how well the model fits to the data.
 # Note: Model has a decent R-squared value of 0.5403
 
-
+# AIC <--- 1545.227
 AIC(final_regression_model)
+# BIC <--- 1555.315
 BIC(final_regression_model)
 
 # Calculating prediction accuracy and error rate
@@ -168,6 +209,9 @@ cor(actuals_preds$actual_value, actuals_preds$predicted_value)
 # hence the correlation obtained is 0.426 which is very high
 # but is significant this implies actual and predicted values 
 # have about 42.6% similar directional movement
+
+# Visually representing the actuals preds in a scatter plot
+plot(actuals_preds, main = "Actual vs Predicted value")
 
 # Viewing the predicted values against the actuals:
 head(actuals_preds,20)
@@ -185,6 +229,7 @@ mape
 # MAPE(Mean Absolute Percentage error) --> 2.463548
 
 #---------- Plotting model residuals ------------#
+par(mfrow =(c(1,1)))
 plot(final_regression_model, pch=16, which=1)
 # the residuals plot shows lots of important points still 
 # lying far away from the middle area of the graph and
